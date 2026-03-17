@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="header_common(title)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">教学评价系统</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div th:fragment="top_navbar" class="top-navbar">
+    <div class="navbar-brand">高校教学评价管理系统</div>
+    <div class="user-info">
+        <span th:text="${session.currentUser != null ? '欢迎您，' + session.currentUser.username : '未登录'}"></span>
+        <a th:href="@{/logout}" class="btn-logout">退出登录</a>
+    </div>
+</div>
+
+<div th:fragment="side_menu(activeMenu)" class="side-menu">
+    <ul>
+        <li th:class="${activeMenu == 'index' ? 'active' : ''}">
+            <a th:href="@{/index}">首页控制台</a>
+        </li>
+        <li th:class="${activeMenu == 'class' ? 'active' : ''}">
+            <a th:href="@{/class/list}">班级信息管理</a>
+        </li>
+        <li th:class="${activeMenu == 'teacher' ? 'active' : ''}">
+            <a th:href="@{/teacher/list}">教师信息管理</a>
+        </li>
+        <li th:class="${activeMenu == 'student' ? 'active' : ''}">
+            <a th:href="@{/student/list}">学生信息管理</a>
+        </li>
+        <li th:class="${activeMenu == 'course' ? 'active' : ''}">
+            <a th:href="@{/course/list}">课程模块管理</a>
+        </li>
+        <li th:class="${activeMenu == 'teaching' ? 'active' : ''}">
+            <a th:href="@{/teaching/list}">授课安排管理</a>
+        </li>
+        <li th:class="${activeMenu == 'evaluation' ? 'active' : ''}">
+            <a th:href="@{/evaluation/list}">教学评价模块</a>
+        </li>
+        <li th:class="${activeMenu == 'bigdata' ? 'active' : ''}">
+            <a th:href="@{/analysis}">大数据统计模块</a>
+        </li>
+    </ul>
+</div>
+
+</body>
+</html>

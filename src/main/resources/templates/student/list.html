@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('学生信息管理')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+  <div th:replace="common/fragments :: side_menu('student')"></div>
+
+  <main class="main-content">
+    <div class="card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>学生信息清单</h3>
+        <button class="btn btn-success" onclick="showAddModal()">+ 新增学生</button>
+      </div>
+      <hr>
+
+      <table class="table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+        <thead>
+        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+          <th>学号</th>
+          <th>姓名</th>
+          <th>性别</th>
+          <th>所属班级</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${studentList}" style="border-bottom: 1px solid #eee;">
+          <td th:text="${s.studentNo}"></td>
+          <td th:text="${s.name}"></td>
+          <td th:text="${s.gender}"></td>
+          <td th:text="${s.className != null ? s.className : '未分配'}"></td>
+          <td th:text="${#dates.format(s.createTime, 'yyyy-MM-dd')}"></td>
+          <td>
+            <button class="btn btn-primary btn-sm" th:onclick="'showEditModal(' + ${s.id} + ')'">修改</button>
+            <button class="btn btn-danger btn-sm" th:onclick="'deleteStudent(' + ${s.id} + ')'">删除</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="studentModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+      <div style="background:white; width:450px; margin:80px auto; padding:25px; border-radius:8px;">
+        <h4 id="modalTitle">新增学生</h4>
+        <hr>
+        <form id="studentForm">
+          <input type="hidden" name="id" id="studentId">
+
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>学号</label>
+            <input type="text" name="studentNo" id="studentNo" class="form-control" style="width:100%;" required>
+            <small style="color: #666;">* 学号将作为学生登录系统的默认账号</small>
+          </div>
+
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>学生姓名</label>
+            <input type="text" name="name" id="studentName" class="form-control" style="width:100%;" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>性别</label>
+            <select name="gender" id="studentGender" class="form-control" style="width:100%;">
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>所属班级</label>
+            <select name="classId" id="classId" class="form-control" style="width:100%;" required>
+              <option value="">-- 请选择班级 --</option>
+              <option th:each="c : ${classList}"
+                      th:value="${c.id}"
+                      th:text="${c.className}"></option>
+            </select>
+          </div>
+
+          <div style="text-align:right; margin-top: 20px;">
+            <button type="button" class="btn" onclick="hideModal()">取消</button>
+            <button type="button" class="btn btn-primary" onclick="submitForm()">保存提交</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script th:inline="javascript">
+  const contextPath = [[@{/}]].slice(0, -1);
+
+    // 显示新增弹窗
+    function showAddModal() {
+      document.getElementById('modalTitle').innerText = "新增学生";
+      document.getElementById('studentId').value = "";
+      document.getElementById('studentNo').readOnly = false;
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentModal').style.display = 'block';
+    }
+
+    // 显示修改弹窗（数据回显）
+    async function showEditModal(id) {
+      try {
+        const response = await fetch(contextPath + '/student/get/' + id);
+        const result = await response.json();
+        if (result.code === 200) {
+          const s = result.data;
+          document.getElementById('modalTitle').innerText = "修改学生信息";
+          document.getElementById('studentId').value = s.id;
+          document.getElementById('studentNo').value = s.studentNo;
+          document.getElementById('studentNo').readOnly = true; // 修改时学号通常不可改
+          document.getElementById('studentName').value = s.name;
+          document.getElementById('studentGender').value = s.gender;
+          document.getElementById('classId').value = s.classId;
+
+          document.getElementById('studentModal').style.display = 'block';
+        }
+      } catch (e) { alert("获取学生信息失败"); }
+    }
+
+    function hideModal() {
+      document.getElementById('studentModal').style.display = 'none';
+    }
+
+    // 提交表单 (新增或修改)
+    async function submitForm() {
+      const form = document.getElementById('studentForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch(contextPath + '/student/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.code === 200) {
+          alert("操作成功！");
+          location.reload();
+        } else {
+          alert(result.message);
+        }
+      } catch (error) { alert("提交异常，请检查后端接口"); }
+    }
+
+    // 删除学生
+    function deleteStudent(id) {
+      if (confirm('确认删除该学生及其系统账号吗？')) {
+        fetch(contextPath + '/student/delete/' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.code === 200) location.reload();
+                  else alert(data.message);
+                });
+      }
+    }
+</script>
+</body>
+</html>

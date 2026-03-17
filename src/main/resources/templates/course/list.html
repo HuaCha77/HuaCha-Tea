@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('课程信息管理')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+    <div th:replace="common/fragments :: side_menu('course')"></div>
+
+    <main class="main-content">
+        <div class="card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>课程信息清单</h3>
+                <button class="btn btn-success" onclick="showAddModal()">+ 新增课程</button>
+            </div>
+            <hr>
+
+            <table class="table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+
+                <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                    <th >课程代码</th>
+                    <th >课程名称</th>
+                    <th >课程类别</th>
+                    <th >学分</th>
+                    <th >开课学期</th>
+                    <th >操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${courseList}" style="border-bottom: 1px solid #eee;">
+                    <td th:text="${c.courseCode}"></td>
+                    <td th:text="${c.courseName}"></td>
+                    <td th:text="${c.courseType}"></td>
+                    <td th:text="${c.credit}"></td>
+                    <td th:text="${c.semester}"></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" th:onclick="'showEditModal(' + ${c.id} + ')'">修改</button>
+                        <button class="btn btn-danger btn-sm" th:onclick="'deleteCourse(' + ${c.id} + ')'">删除</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="courseModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+            <div style="background:white; width:450px; margin:80px auto; padding:25px; border-radius:8px;">
+                <h4 id="modalTitle">新增课程</h4>
+                <hr>
+                <form id="courseForm">
+                    <input type="hidden" name="id" id="courseId">
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>课程代码</label>
+                        <input type="text" name="courseCode" id="courseCode" class="form-control" style="width:100%;" placeholder="如：CS101" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>课程名称</label>
+                        <input type="text" name="courseName" id="courseName" class="form-control" style="width:100%;" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>课程类别</label>
+                        <select name="courseType" id="courseType" class="form-control" style="width:100%;">
+                            <option value="必修">必修</option>
+                            <option value="选修">选修</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>学分</label>
+                        <input type="number" name="credit" id="credit" step="0.5" min="0" class="form-control" style="width:100%;" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>开课学期</label>
+                        <input type="text" name="semester" id="semester" class="form-control" style="width:100%;" placeholder="如：2025-2026 第一学期">
+                    </div>
+
+                    <div style="text-align:right; margin-top: 20px;">
+                        <button type="button" class="btn" onclick="hideModal()">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="submitForm()">保存提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    // 动态获取 Context Path 避免路径错误
+    const contextPath = [[@{/}]].slice(0, -1);
+
+        function showAddModal() {
+            document.getElementById('modalTitle').innerText = "新增课程";
+            document.getElementById('courseId').value = "";
+            document.getElementById('courseForm').reset();
+            document.getElementById('courseModal').style.display = 'block';
+        }
+
+        async function showEditModal(id) {
+            try {
+                const response = await fetch(contextPath + '/course/get/' + id);
+                const result = await response.json();
+                if (result.code === 200) {
+                    const c = result.data;
+                    document.getElementById('modalTitle').innerText = "修改课程信息";
+                    document.getElementById('courseId').value = c.id;
+                    document.getElementById('courseCode').value = c.courseCode;
+                    document.getElementById('courseName').value = c.courseName;
+                    document.getElementById('courseType').value = c.courseType;
+                    document.getElementById('credit').value = c.credit;
+                    document.getElementById('semester').value = c.semester;
+
+                    document.getElementById('courseModal').style.display = 'block';
+                }
+            } catch (e) { alert("获取数据失败"); }
+        }
+
+        function hideModal() {
+            document.getElementById('courseModal').style.display = 'none';
+        }
+
+        async function submitForm() {
+            const form = document.getElementById('courseForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(contextPath + '/course/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    alert("保存成功！");
+                    location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) { alert("网络异常"); }
+        }
+
+        function deleteCourse(id) {
+            if (confirm('确认删除该课程吗？')) {
+                fetch(contextPath + '/course/delete/' + id, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 200) location.reload();
+                        else alert(data.message);
+                    });
+            }
+        }
+</script>
+</body>
+</html>

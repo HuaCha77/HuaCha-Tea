@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.TeachingMapper">
+    <select id="findAll" resultType="com.edu.evaluation.entity.TeachingInfo">
+        SELECT
+            t.id,
+            t.semester,
+            t.teacher_id as teacherId,
+            t.course_id as courseId,
+            t.class_id as classId,
+            it.name as teacherName,
+            ic.course_name as courseName,
+            sc.class_name as className
+        FROM info_teaching t
+                 LEFT JOIN info_teacher it ON t.teacher_id = it.id
+                 LEFT JOIN info_course ic ON t.course_id = ic.id
+                 LEFT JOIN sys_class sc ON t.class_id = sc.id
+        WHERE t.del_flag = 0
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.TeachingInfo">
+        SELECT
+            id,
+            teacher_id as teacherId,
+            course_id as courseId,
+            class_id as classId,
+            semester
+        FROM info_teaching
+        WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <insert id="insert" parameterType="com.edu.evaluation.entity.TeachingInfo"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO info_teaching (
+            teacher_id,
+            course_id,
+            class_id,
+            semester,
+            create_time,
+            del_flag
+        ) VALUES (
+                     #{teacherId},
+                     #{courseId},
+                     #{classId},
+                     #{semester},
+                     NOW(),
+                     0
+                 )
+    </insert>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.TeachingInfo">
+        UPDATE info_teaching
+        <set>
+            <if test="teacherId != null">teacher_id = #{teacherId},</if>
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="classId != null">class_id = #{classId},</if>
+            <if test="semester != null">semester = #{semester},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE info_teaching
+        SET del_flag = 1
+        WHERE id = #{id}
+    </update>
+
+
+</mapper>

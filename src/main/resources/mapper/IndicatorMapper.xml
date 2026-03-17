@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.IndicatorMapper">
+
+    <select id="findAll" resultType="com.edu.evaluation.entity.IndicatorInfo">
+        SELECT id, indicator_name as indicatorName, category, weight, max_score as maxScore, create_time as createTime
+        FROM info_indicator WHERE del_flag = 0 ORDER BY category, id ASC
+    </select>
+
+    <insert id="insert" parameterType="com.edu.evaluation.entity.IndicatorInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO info_indicator (indicator_name, category, weight, max_score, create_time, del_flag)
+        VALUES (#{indicatorName}, #{category}, #{weight}, #{maxScore}, NOW(), 0)
+    </insert>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.IndicatorInfo">
+        UPDATE info_indicator
+        <set>
+            <if test="indicatorName != null">indicator_name = #{indicatorName},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="maxScore != null">max_score = #{maxScore},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.IndicatorInfo">
+        SELECT id, indicator_name as indicatorName, category, weight, max_score as maxScore FROM info_indicator WHERE id = #{id}
+    </select>
+
+    <update id="deleteById">
+        UPDATE info_indicator SET del_flag = 1 WHERE id = #{id}
+    </update>
+</mapper>

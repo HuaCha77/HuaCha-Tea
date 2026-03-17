@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>教学评价系统 - 登录</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-box">
+        <h2>教学评价系统</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" name="username" placeholder="请输入学号/工号" required>
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" name="password" placeholder="请输入密码" required>
+            </div>
+            <div class="form-group">
+                <label>身份</label>
+                <select name="role" required>
+                    <option value="STUDENT">学生</option>
+                    <option value="TEACHER">教师</option>
+                    <option value="ADMIN">管理员</option>
+                </select>
+            </div>
+            <button type="button" class="btn-login" onclick="doLogin()">立即登录</button>
+        </form>
+        <div id="errorMsg" style="color: red; text-align: center; margin-top: 10px;"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // 修正点：在 Spring Boot 3 中，使用 @{/} 自动获取 Context Path
+    // 注意：@{/} 通常会返回 "/evaluation/"（带斜杠），我们用 slice 删掉最后的斜杠
+    const contextPath = [[@{/}]].slice(0, -1);
+
+        async function doLogin() {
+            const form = document.getElementById('loginForm');
+            const formData = new FormData(form);
+            const errorDiv = document.getElementById('errorMsg');
+
+            errorDiv.innerText = "正在登录...";
+
+            try {
+                // 使用修正后的 contextPath 进行请求
+                const response = await fetch(contextPath + '/login', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    // 登录成功，跳转到首页
+                    window.location.href = contextPath + '/index';
+                } else {
+                    errorDiv.innerText = result.message;
+                }
+            } catch (error) {
+                console.error(error);
+                errorDiv.innerText = "网络异常或服务器故障";
+            }
+        }
+</script>
+</body>
+</html>

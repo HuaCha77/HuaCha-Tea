@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.UserMapper">
+
+    <select id="findByUsername" resultType="com.edu.evaluation.entity.User">
+        SELECT * FROM sys_user WHERE username = #{username} AND del_flag = 0
+    </select>
+
+    <insert id="insert" parameterType="com.edu.evaluation.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (
+            username,
+            password,
+            role,
+            status,
+            del_flag,
+            create_time
+        ) VALUES (
+                     #{username}, -- 这里存入的是工号
+                     #{password},
+                     #{role},
+                     1, -- 默认启用
+                     0, -- 正常状态
+                     NOW()
+                 )
+    </insert>
+</mapper>

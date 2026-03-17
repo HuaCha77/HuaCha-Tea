@@ -1,0 +1,166 @@
+/* 基于你提供的代码进行的整合优化 */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Microsoft YaHei', sans-serif;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 350px;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+.form-group input, .form-group select {
+    width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+}
+
+.btn-login {
+    width: 100%; padding: 12px; background: #667eea; color: white;
+    border: none; border-radius: 5px; cursor: pointer; font-size: 16px;
+}
+
+.btn-login:hover { background: #5a6fd8; }
+
+.navbar { background: #2c3e50; color: white; padding: 15px 50px; display: flex; justify-content: space-between; }
+.navbar-nav { display: flex; list-style: none; }
+.navbar-nav li { margin-left: 20px; }
+.navbar-nav a { color: white; text-decoration: none; }
+.main-container { padding: 40px; }
+.alert { padding: 15px; border-radius: 5px; margin-bottom: 20px; background: #d4edda; color: #155724; }
+
+/* 后台管理系统布局样式 */
+body {
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* 顶部栏 */
+.top-navbar {
+    height: 60px;
+    background-color: #2c3e50;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+}
+
+.user-info .btn-logout {
+    margin-left: 15px;
+    color: #ecf0f1;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* 主体容器 */
+.layout-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 侧边栏 */
+.side-menu {
+    width: 220px;
+    background-color: #34495e;
+    color: #ecf0f1;
+    padding-top: 20px;
+}
+
+.side-menu ul {
+    list-style: none;
+}
+
+.side-menu ul li {
+    padding: 15px 20px;
+    transition: background 0.3s;
+}
+
+.side-menu ul li a {
+    color: #bdc3c7;
+    text-decoration: none;
+    display: block;
+}
+
+.side-menu ul li.active {
+    background-color: #1abc9c;
+}
+
+.side-menu ul li.active a {
+    color: white;
+}
+
+.side-menu ul li:hover:not(.active) {
+    background-color: #3d566e;
+}
+
+/* 右侧内容区 */
+.main-content {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+    background-color: #f4f7f6;
+}
+
+/* 统一表格基础布局 */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* 核心：固定布局，防止内容撑开变形 */
+    margin-top: 20px;
+    background-color: white;
+}
+
+/* 1. 强制表格布局固定，不再随内容自动撑开 */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* 强制对齐 */
+    background-color: #fff;
+    margin-top: 15px;
+}
+
+/* 2. 统一表头(th)和内容(td)的对齐方式 */
+.table th,
+.table td {
+    text-align: left;      /* 统一全部靠左对齐 */
+    padding: 12px 10px;    /* 增加左右间距，防止文字贴边 */
+    vertical-align: middle; /* 垂直居中 */
+    border-bottom: 1px solid #eee;
+    overflow: hidden;      /* 防止超长内容导致歪斜 */
+    text-overflow: ellipsis;
+    white-space: nowrap;   /* 防止换行把行高撑得高低不平 */
+}
+
+/* 3. 美化表头，给它一个明显的底边线 */
+.table thead th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* 4. 操作列（最后一列）建议单独处理，让按钮稍微紧凑一点 */
+/* 针对操作列（最后一列）的优化 */
+.table th:last-child,
+.table td:last-child {
+    text-align: center; /* 改为居中对齐 */
+    padding-right: 10px; /* 恢复正常的间距 */
+    width: 140px;       /* 给予一个合理的固定宽度 */
+}
+
+/* 确保按钮容器也是居中的 */
+.table td:last-child div {
+    justify-content: center !important; /* 强制按钮组居中 */
+}

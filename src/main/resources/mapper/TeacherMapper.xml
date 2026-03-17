@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.TeacherMapper">
+    <select id="findAll" resultType="com.edu.evaluation.entity.TeacherInfo">
+        SELECT * FROM info_teacher WHERE del_flag = 0 ORDER BY id DESC
+    </select>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.TeacherInfo">
+        SELECT * FROM info_teacher WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.edu.evaluation.entity.TeacherInfo">
+        INSERT INTO info_teacher(user_id, teacher_no, name, gender, contact, title, create_time, del_flag)
+        VALUES(#{userId}, #{teacherNo}, #{name}, #{gender}, #{contact}, #{title}, NOW(), 0)
+    </insert>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.TeacherInfo">
+        UPDATE info_teacher
+        SET name = #{name}, gender = #{gender}, contact = #{contact}, title = #{title}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE info_teacher SET del_flag = 1 WHERE id = #{id}
+    </update>
+</mapper>

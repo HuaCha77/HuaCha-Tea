@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('授课安排管理')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+    <div th:replace="common/fragments :: side_menu('teaching')"></div>
+
+    <main class="main-content">
+        <div class="card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>授课关系清单</h3>
+                <button class="btn btn-success" onclick="showAddModal()">+ 新增授课安排</button>
+            </div>
+            <hr>
+
+            <table class="table">
+                <colgroup>
+                    <col style="width: 15%;"> <col style="width: 25%;"> <col style="width: 15%;"> <col style="width: 25%;"> <col style="width: 20%;"> </colgroup>
+                <thead>
+                <tr>
+                    <th>授课教师</th>
+                    <th>课程名称</th>
+                    <th>授课班级</th>
+                    <th>学期</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${teachingList}">
+                    <td th:text="${t.teacherName}"></td>
+                    <td th:text="${t.courseName}"></td>
+                    <td th:text="${t.className}"></td>
+                    <td th:text="${t.semester}"></td>
+                    <td>
+                        <div style="display: flex; gap: 5px; justify-content: center;">
+                            <button class="btn btn-primary btn-sm" th:onclick="'showEditModal(' + ${t.id} + ')'">修改</button>
+                            <button class="btn btn-danger btn-sm" th:onclick="'deleteTeaching(' + ${t.id} + ')'">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="teachingModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+            <div style="background:white; width:450px; margin:80px auto; padding:25px; border-radius:8px;">
+                <h4 id="modalTitle">新增授课安排</h4>
+                <hr>
+                <form id="teachingForm">
+                    <input type="hidden" name="id" id="teachingId">
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>选择教师</label>
+                        <select name="teacherId" id="teacherId" class="form-control" style="width:100%;" required>
+                            <option value="">-- 请选择教师 --</option>
+                            <option th:each="teacher : ${teacherList}" th:value="${teacher.id}" th:text="${teacher.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>选择课程</label>
+                        <select name="courseId" id="courseId" class="form-control" style="width:100%;" required>
+                            <option value="">-- 请选择课程 --</option>
+                            <option th:each="course : ${courseList}" th:value="${course.id}" th:text="${course.courseName}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>选择班级</label>
+                        <select name="classId" id="classId" class="form-control" style="width:100%;" required>
+                            <option value="">-- 请选择班级 --</option>
+                            <option th:each="clz : ${classList}" th:value="${clz.id}" th:text="${clz.className}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>开课学期</label>
+                        <input type="text" name="semester" id="semester" class="form-control" style="width:100%;" placeholder="如：2025-2026 第一学期" required>
+                    </div>
+
+                    <div style="text-align:right; margin-top: 20px;">
+                        <button type="button" class="btn" onclick="hideModal()">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="submitForm()">保存提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const contextPath = [[@{/}]].slice(0, -1);
+
+        function showAddModal() {
+            document.getElementById('modalTitle').innerText = "新增授课安排";
+            document.getElementById('teachingId').value = "";
+            document.getElementById('teachingForm').reset();
+            document.getElementById('teachingModal').style.display = 'block';
+        }
+
+        async function showEditModal(id) {
+            try {
+                const response = await fetch(contextPath + '/teaching/get/' + id);
+                const result = await response.json();
+                if (result.code === 200) {
+                    const data = result.data;
+                    document.getElementById('modalTitle').innerText = "修改授课安排";
+                    document.getElementById('teachingId').value = data.id;
+                    document.getElementById('teacherId').value = data.teacherId;
+                    document.getElementById('courseId').value = data.courseId;
+                    document.getElementById('classId').value = data.classId;
+                    document.getElementById('semester').value = data.semester;
+                    document.getElementById('teachingModal').style.display = 'block';
+                }
+            } catch (e) { alert("获取数据失败"); }
+        }
+
+        function hideModal() {
+            document.getElementById('teachingModal').style.display = 'none';
+        }
+
+        async function submitForm() {
+            const form = document.getElementById('teachingForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // console.log("准备发送的数据：", data);
+
+            try {
+                const response = await fetch(contextPath + '/teaching/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) { alert("网络异常"); }
+        }
+
+        function deleteTeaching(id) {
+            if (confirm('确认删除该授课安排吗？')) {
+                fetch(contextPath + '/teaching/delete/' + id, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 200) location.reload();
+                        else alert(data.message);
+                    });
+            }
+        }
+</script>
+</body>
+</html>

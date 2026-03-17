@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.CourseMapper">
+
+    <select id="findAll" resultType="com.edu.evaluation.entity.CourseInfo">
+        SELECT
+            id,
+            course_code as courseCode,
+            course_name as courseName,
+            type as courseType,
+            credits as credit,
+            semester,
+            status,
+            create_time as createTime
+        FROM info_course
+        WHERE del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.CourseInfo">
+        SELECT
+            id,
+            course_code as courseCode,
+            course_name as courseName,
+            type as courseType,
+            credits as credit,
+            semester,
+            status
+        FROM info_course
+        WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <insert id="insert" parameterType="com.edu.evaluation.entity.CourseInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO info_course (
+            course_code,
+            course_name,
+            type,
+            credits,
+            semester,
+            status,
+            create_time,
+            del_flag
+        ) VALUES (
+                     #{courseCode},
+                     #{courseName},
+                     #{courseType},
+                     #{credit},
+                     #{semester},
+                     1,           -- 默认开启状态
+                     NOW(),
+                     0            -- 逻辑删除标记：正常
+                 )
+    </insert>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.CourseInfo">
+        UPDATE info_course
+        <set>
+            <if test="courseCode != null">course_code = #{courseCode},</if>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="courseType != null">type = #{courseType},</if>
+            <if test="credit != null">credits = #{credit},</if>
+            <if test="semester != null">semester = #{semester},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE info_course SET del_flag = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

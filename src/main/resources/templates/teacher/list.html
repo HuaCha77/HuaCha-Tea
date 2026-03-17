@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('教师管理')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+  <div th:replace="common/fragments :: side_menu('teacher')"></div>
+
+  <main class="main-content">
+    <div class="card" style="background: white; padding: 20px; border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>教师信息清单</h3>
+        <button class="btn btn-success" onclick="showAddModal()">+ 新增教师</button>
+      </div>
+      <hr>
+      <table class="table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+        <thead>
+        <tr style="background: #f8f9fa;">
+          <th>工号</th>
+          <th>姓名</th>
+          <th>性别</th>
+          <th>职称</th>
+          <th>联系方式</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="t : ${teacherList}">
+          <td th:text="${t.teacherNo}"></td>
+          <td th:text="${t.name}"></td>
+          <td th:text="${t.gender}"></td>
+          <td th:text="${t.title}"></td>
+          <td th:text="${t.contact}"></td>
+          <td th:text="${#dates.format(t.createTime, 'yyyy-MM-dd')}"></td>
+          <td>
+            <button class="btn btn-primary" th:onclick="'showEditModal(' + ${t.id} + ')'">修改</button>
+            <button class="btn btn-danger" th:onclick="'deleteTeacher(' + ${t.id} + ')'">删除</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="addModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+      <div style="background:white; width:400px; margin:100px auto; padding:20px; border-radius:8px;">
+        <h4>新增教师</h4>
+        <hr>
+        <form id="addForm">
+          <input type="hidden" name="id" id="teacherId">
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>工号</label>
+            <input type="text" name="teacherNo" id="teacherNoInput" class="form-control" style="width:100%;" required>
+          </div>
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>教师姓名</label>
+            <input type="text" name="name" class="form-control" style="width:100%;" required>
+          </div>
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>性别</label>
+            <input type="text" name="gender" class="form-control" style="width:100%;" required>
+          </div>
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>职称</label>
+            <input type="text" name="title" class="form-control" style="width:100%;" placeholder="如：教授" required>
+          </div>
+          <div class="form-group" style="margin-bottom:15px;">
+            <label>联系方式</label>
+            <input type="text" name="contact" class="form-control" style="width:100%;" required>
+          </div>
+
+          <div style="text-align:right;">
+            <button type="button" class="btn" onclick="hideAddModal()">取消</button>
+            <button type="button" class="btn btn-primary" onclick="submitAdd()">提交</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script th:inline="javascript">
+  // 只声明一次
+  const contextPath = [[@{/}]].slice(0, -1);
+
+
+    function showAddModal() {
+      document.getElementById('teacherId').value = ""; // 清空 ID
+      document.getElementById('teacherNoInput').readOnly = false;
+      document.getElementById('addForm').reset();
+      document.querySelector('#addModal h4').innerText = "新增教师";
+      document.getElementById('addModal').style.display = 'block';
+    }
+
+    function hideAddModal() {
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('addForm').reset();
+    }
+
+    async function submitAdd() {
+      const form = document.getElementById('addForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        // 请确保后端对应的路径是 /add 还是 /save
+        const response = await fetch(contextPath + '/teacher/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        // 如果后端返回的不是 JSON（比如 404 页面），这里会抛出异常
+        const result = await response.json();
+
+        if (result && result.code === 200) {
+          alert("添加成功！");
+          location.reload();
+        } else {
+          // 如果 result.message 不存在，就会显示 undefined
+          alert(result.message || "添加失败：未知错误");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("提交失败，请检查网络或后端接口路径");
+      }
+    }
+
+    function deleteTeacher(id) {
+      if(confirm('确定要删除该教师吗？')) {
+        fetch(contextPath + '/teacher/delete/' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                  if(data.code === 200) {
+                    location.reload();
+                  } else {
+                    alert(data.message || "删除失败");
+                  }
+                })
+                .catch(err => alert("网络异常"));
+      }
+    }
+
+    async function showEditModal(id) {
+      try {
+        const response = await fetch(contextPath + '/teacher/get/' + id);
+        const result = await response.json();
+        if (result.code === 200) {
+          const t = result.data;
+          // 将数据填入表单
+          document.getElementById('teacherId').value = t.id;
+          document.getElementById('teacherNoInput').value = t.teacherNo;
+          document.getElementById('teacherNoInput').readOnly = true; // 修改时工号通常不允许改
+          document.getElementsByName('name')[0].value = t.name;
+          document.getElementsByName('gender')[0].value = t.gender;
+          document.getElementsByName('title')[0].value = t.title;
+          document.getElementsByName('contact')[0].value = t.contact;
+
+          document.querySelector('#addModal h4').innerText = "修改教师信息";
+          document.getElementById('addModal').style.display = 'block';
+        }
+      } catch (error) {
+        alert("获取数据失败");
+      }
+    }
+
+
+</script>
+</body>
+</html>
