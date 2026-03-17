@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('在线评价')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+<div class="layout-body">
+    <main class="main-content" style="max-width: 800px; margin: 20px auto;">
+        <div class="card" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+            <h3 style="text-align: center; color: #333;">教学质量评价表</h3>
+            <p style="text-align: center; color: #666;">
+                评价对象：<span th:text="${teaching.teacherName}" style="font-weight: bold; color: #1a73e8;"></span>
+                | 课程：<span th:text="${teaching.courseName}" style="font-weight: bold;"></span>
+            </p>
+            <hr>
+
+            <form id="evaluationForm">
+                <input type="hidden" id="teachingId" th:value="${teaching.id}">
+
+                <div th:each="ind : ${indicators}" class="evaluation-item" style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #eee;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 10px;">
+                        <span th:text="${ind.category + '：'}" style="color: #666; font-size: 14px;"></span>
+                        <span th:text="${ind.indicatorName}"></span>
+                        <span th:text="'(分值范围: 0-' + ${ind.maxScore} + ')'" style="color: #999; font-size: 12px; margin-left: 10px;"></span>
+                    </label>
+                    <input type="number"
+                           th:attr="data-indicator-id=${ind.id}, max=${ind.maxScore}"
+                           class="score-input form-control"
+                           placeholder="请输入分值"
+                           style="width: 150px;" required>
+                </div>
+
+                <div class="form-group">
+                    <label>意见与建议（选填）</label>
+                    <textarea id="comment" class="form-control" rows="3" placeholder="写下您对老师的建议..."></textarea>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="button" class="btn btn-primary" style="padding: 10px 40px;" onclick="submitAll()">提交评价</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    async function submitAll() {
+        const teachingId = document.getElementById('teachingId').value;
+        const comment = document.getElementById('comment').value;
+        const scoreInputs = document.querySelectorAll('.score-input');
+
+        // 组装批量评价数据
+        const evaluationList = [];
+        for (let input of scoreInputs) {
+            const score = parseFloat(input.value);
+            const max = parseFloat(input.getAttribute('max'));
+
+            if (isNaN(score) || score < 0 || score > max) {
+                alert("请确保所有分值在有效范围内！");
+                return;
+            }
+
+            evaluationList.push({
+                teachingId: teachingId,
+                indicatorId: input.getAttribute('data-indicator-id'),
+                score: score,
+                comment: comment
+            });
+        }
+
+        // 发送到后端批量保存
+        const response = await fetch('/evaluation/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(evaluationList)
+        });
+
+        const result = await response.json();
+        if (result.code === 200) {
+            alert("评价提交成功！感谢您的反馈。");
+            window.location.href = "/student/my-tasks";
+        }
+    }
+</script>
+</body>
+</html>
