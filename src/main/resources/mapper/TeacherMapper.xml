@@ -6,7 +6,7 @@
     </select>
 
     <select id="findById" resultType="com.edu.evaluation.entity.TeacherInfo">
-        SELECT * FROM info_teacher WHERE id = #{id}
+        SELECT * FROM info_teacher WHERE user_id = #{id}
     </select>
 
     <insert id="insert" parameterType="com.edu.evaluation.entity.TeacherInfo">

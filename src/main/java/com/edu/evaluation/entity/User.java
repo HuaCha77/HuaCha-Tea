@@ -10,6 +10,9 @@ public class User extends BaseEntity {
     private String role;   // admin, teacher, student
     private Integer status; // 0:正常, 1:停用
 
+    // 冗余字段：姓名（用于显示）
+    private String name;
+
     public User() {}
 
     // --- 手动生成的 Getter 和 Setter ---
@@ -27,4 +30,7 @@ public class User extends BaseEntity {
 
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 }

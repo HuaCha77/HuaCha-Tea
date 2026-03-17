@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('个人中心 - 教学评价系统')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+    <div th:replace="common/fragments :: side_menu('profile')"></div>
+
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-0">
+                            <h4 class="fw-bold mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>个人中心</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <div class="avatar-circle mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;" 
+                                     th:text="${session.User != null ? #strings.substring(session.User.name != null ? session.User.name : session.User.username, 0, 1).toUpperCase() : '?'}">U</div>
+                                <h5 class="fw-bold" th:text="${session.User != null ? (session.User.name != null ? session.User.name : session.User.username) : '未知用户'}">用户名</h5>
+                                <span class="badge bg-primary px-3 rounded-pill" th:text="${session.User != null ? session.User.role : 'GUEST'}">角色</span>
+                            </div>
+
+                            <form id="profileForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">真实姓名</label>
+                                    <input type="text" class="form-control bg-light" th:value="${session.User != null ? session.User.name : ''}" disabled>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">用户名 / 学号 / 工号</label>
+                                    <input type="text" class="form-control bg-light" th:value="${session.User != null ? session.User.username : ''}" disabled>
+                                    <div class="form-text text-muted">账号名不可修改</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">账户身份</label>
+                                    <input type="text" class="form-control bg-light" th:value="${session.User != null ? session.User.role : ''}" disabled>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">注册时间</label>
+                                    <input type="text" class="form-control bg-light" 
+                                           th:value="${session.User != null && session.User.createTime != null ? #dates.format(session.User.createTime, 'yyyy-MM-dd HH:mm') : '-'}" disabled>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary py-2 fw-bold shadow-sm" onclick="saveProfile()">
+                                        <i class="fas fa-save me-2"></i>保存修改
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const contextPath = [[@{/}]].slice(0, -1);
+
+    async function saveProfile() {
+        // 目前 User 实体字段较少，仅作为演示。实际开发中可以扩展更多字段（如手机号、邮箱等）
+        const data = {}; 
+
+        try {
+            const response = await fetch(contextPath + '/user/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert("个人信息更新成功！");
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert("提交失败，请重试");
+        }
+    }
+</script>
+</body>
+</html>

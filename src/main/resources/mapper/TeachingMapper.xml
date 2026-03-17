@@ -66,5 +66,20 @@
         WHERE id = #{id}
     </update>
 
+    <select id="getTasksByClassId" resultType="com.edu.evaluation.entity.TeachingInfo">
+        SELECT
+            t.id,
+            t.semester,
+            it.name as teacherName,
+            ic.course_name as courseName,
+            t.teacher_id as teacherId,
+            t.course_id as courseId,
+            t.class_id as classId
+        FROM info_teaching t
+                 LEFT JOIN info_teacher it ON t.teacher_id = it.id
+                 LEFT JOIN info_course ic ON t.course_id = ic.id
+        WHERE t.class_id = #{classId} AND t.del_flag = 0
+    </select>
+
 
 </mapper>

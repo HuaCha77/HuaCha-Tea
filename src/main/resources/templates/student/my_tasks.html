@@ -1,10 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('我的评价任务')"></head>
 <body>
-$END$
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+    <div th:replace="common/fragments :: side_menu('my-tasks')"></div>
+
+    <main class="main-content">
+        <div class="card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>本学期评价清单</h3>
+                <span style="color: #666; font-size: 14px;">提示：请在学期结束前完成所有课程的评价</span>
+            </div>
+            <hr>
+
+            <table class="table">
+                <colgroup>
+                    <col style="width: 25%;"> <col style="width: 20%;"> <col style="width: 25%;"> <col style="width: 15%;"> <col style="width: 15%;"> </colgroup>
+                <thead>
+                <tr>
+                    <th>课程名称</th>
+                    <th>教师</th>
+                    <th>学期</th>
+                    <th>评价状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="task : ${taskList}">
+                    <td th:text="${task.courseName}" style="font-weight: 500;"></td>
+                    <td th:text="${task.teacherName}"></td>
+                    <td th:text="${task.semester}"></td>
+                    <td>
+                        <span th:if="${task.isFinished == 1}" class="badge" style="background-color: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 12px;">● 已评价</span>
+                        <span th:if="${task.isFinished == 0}" class="badge" style="background-color: #fff3e0; color: #ef6c00; padding: 4px 8px; border-radius: 4px; font-size: 12px;">● 待评价</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; justify-content: center;">
+                            <a th:if="${task.isFinished == 0}"
+                               th:href="@{'/student/evaluate/' + ${task.id}}"
+                               class="btn btn-primary btn-sm"
+                               style="text-decoration: none;">开始评价</a>
+
+                            <button th:if="${task.isFinished == 1}"
+                                    class="btn btn-sm"
+                                    style="background-color: #f5f5f5; color: #999; cursor: not-allowed;"
+                                    disabled>评价完成</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(taskList)}">
+                    <td colspan="5" style="text-align: center; color: #999; padding: 40px;">当前暂无评价任务</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
 </body>
 </html>

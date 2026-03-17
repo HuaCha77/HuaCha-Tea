@@ -3,47 +3,113 @@
 
 <head th:fragment="header_common(title)">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">教学评价系统</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<div th:fragment="top_navbar" class="top-navbar">
-    <div class="navbar-brand">高校教学评价管理系统</div>
-    <div class="user-info">
-        <span th:text="${session.currentUser != null ? '欢迎您，' + session.currentUser.username : '未登录'}"></span>
-        <a th:href="@{/logout}" class="btn-logout">退出登录</a>
+<div th:fragment="top_navbar" class="top-navbar shadow-sm">
+    <div class="navbar-logo">
+        <i class="fas fa-graduation-cap me-2"></i>
+        <span>高校教学评价系统</span>
+    </div>
+    <div class="user-profile dropdown">
+        <div class="d-flex align-items-center cursor-pointer" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="user-meta">
+                <span class="user-name d-inline-block" th:text="${session.User != null ? (session.User.name != null ? session.User.name : session.User.username) : '未登录'}">用户名</span>
+                <span class="user-role badge bg-primary ms-1" th:text="${session.User != null ? session.User.role : 'GUEST'}">角色</span>
+            </div>
+            <i class="fas fa-chevron-down ms-2 opacity-50 small"></i>
+        </div>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" th:href="@{/user/profile}"><i class="fas fa-user-circle me-2"></i>个人中心</a></li>
+            <li><a class="dropdown-item" th:href="@{/user/password}"><i class="fas fa-key me-2"></i>修改密码</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a th:href="@{/logout}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
+        </ul>
     </div>
 </div>
 
-<div th:fragment="side_menu(activeMenu)" class="side-menu">
-    <ul>
-        <li th:class="${activeMenu == 'index' ? 'active' : ''}">
-            <a th:href="@{/index}">首页控制台</a>
-        </li>
-        <li th:class="${activeMenu == 'class' ? 'active' : ''}">
-            <a th:href="@{/class/list}">班级信息管理</a>
-        </li>
-        <li th:class="${activeMenu == 'teacher' ? 'active' : ''}">
-            <a th:href="@{/teacher/list}">教师信息管理</a>
-        </li>
-        <li th:class="${activeMenu == 'student' ? 'active' : ''}">
-            <a th:href="@{/student/list}">学生信息管理</a>
-        </li>
-        <li th:class="${activeMenu == 'course' ? 'active' : ''}">
-            <a th:href="@{/course/list}">课程模块管理</a>
-        </li>
-        <li th:class="${activeMenu == 'teaching' ? 'active' : ''}">
-            <a th:href="@{/teaching/list}">授课安排管理</a>
-        </li>
-        <li th:class="${activeMenu == 'evaluation' ? 'active' : ''}">
-            <a th:href="@{/evaluation/list}">教学评价模块</a>
-        </li>
-        <li th:class="${activeMenu == 'bigdata' ? 'active' : ''}">
-            <a th:href="@{/analysis}">大数据统计模块</a>
-        </li>
-    </ul>
+<div th:fragment="side_menu(activeMenu)" class="side-menu shadow-sm">
+    <div class="menu-section">
+        <p class="menu-label">核心功能</p>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a th:class="${activeMenu == 'index' ? 'nav-link active' : 'nav-link'}" th:href="@{/index}">
+                    <i class="fas fa-chart-line me-3"></i>控制台首页
+                </a>
+            </li>
+            
+            <!-- 管理员专属菜单 -->
+            <th:block th:if="${session.User != null && session.User.role == 'ADMIN'}">
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'user' ? 'nav-link active' : 'nav-link'}" th:href="@{/user/list}">
+                        <i class="fas fa-users-cog me-3"></i>用户权限管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'class' ? 'nav-link active' : 'nav-link'}" th:href="@{/class/list}">
+                        <i class="fas fa-school me-3"></i>班级信息管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'teacher' ? 'nav-link active' : 'nav-link'}" th:href="@{/teacher/list}">
+                        <i class="fas fa-chalkboard-teacher me-3"></i>教师档案管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'student' ? 'nav-link active' : 'nav-link'}" th:href="@{/student/list}">
+                        <i class="fas fa-user-graduate me-3"></i>学生信息管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'course' ? 'nav-link active' : 'nav-link'}" th:href="@{/course/list}">
+                        <i class="fas fa-book me-3"></i>课程资源管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'teaching' ? 'nav-link active' : 'nav-link'}" th:href="@{/teaching/list}">
+                        <i class="fas fa-calendar-alt me-3"></i>授课任务安排
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'indicator' ? 'nav-link active' : 'nav-link'}" th:href="@{/indicator/list}">
+                        <i class="fas fa-tasks me-3"></i>评教指标设计
+                    </a>
+                </li>
+            </th:block>
+
+            <!-- 学生专属菜单 -->
+            <th:block th:if="${session.User != null && session.User.role == 'STUDENT'}">
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'my-tasks' ? 'nav-link active' : 'nav-link'}" th:href="@{/student/my-tasks}">
+                        <i class="fas fa-edit me-3"></i>我的评教任务
+                    </a>
+                </li>
+            </th:block>
+
+            <!-- 教师/管理员共有 -->
+            <th:block th:if="${session.User != null && (session.User.role == 'ADMIN' || session.User.role == 'TEACHER')}">
+                <li class="nav-item">
+                    <a th:class="${activeMenu == 'stats' ? 'nav-link active' : 'nav-link'}" th:href="@{/stats/dashboard}">
+                        <i class="fas fa-database me-3"></i>数据分析统计
+                    </a>
+                </li>
+            </th:block>
+        </ul>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </div>
 
 </body>

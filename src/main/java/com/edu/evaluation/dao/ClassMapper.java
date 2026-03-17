@@ -14,4 +14,10 @@ public interface ClassMapper {
 
     // 逻辑删除班级
     int deleteById(Integer id);
+
+    // 根据ID查询班级
+    ClassInfo findById(Integer id);
+
+    // 更新班级信息
+    int update(ClassInfo classInfo);
 }

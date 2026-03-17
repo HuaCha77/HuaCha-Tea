@@ -26,4 +26,14 @@ public class ClassServiceImpl implements ClassService {
     public void removeClass(Integer id) {
         classMapper.deleteById(id);
     }
+
+    @Override
+    public ClassInfo getClassById(Integer id) {
+        return classMapper.findById(id);
+    }
+
+    @Override
+    public void updateClass(ClassInfo classInfo) {
+        classMapper.update(classInfo);
+    }
 }

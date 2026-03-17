@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/fragments :: header_common('用户权限管理 - 教学评价系统')"></head>
+<body>
+<div th:replace="common/fragments :: top_navbar"></div>
+
+<div class="layout-body">
+    <div th:replace="common/fragments :: side_menu('user')"></div>
+
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">用户权限管理</h4>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary shadow-sm" onclick="document.getElementById('importFile').click()">
+                        <i class="fas fa-file-import me-2"></i>批量导入
+                    </button>
+                    <input type="file" id="importFile" style="display:none" onchange="doImport(this)">
+                    <button class="btn btn-primary shadow-sm" onclick="showAddModal()">
+                        <i class="fas fa-user-plus me-2"></i>新增用户
+                    </button>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名/工号</th>
+                                    <th>所属角色</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${userList}">
+                                    <td th:text="${u.id}">1</td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${u.username}">admin</div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${u.role == 'ADMIN'}" class="badge bg-danger">系统管理员</span>
+                                        <span th:if="${u.role == 'TEACHER'}" class="badge bg-success">教师</span>
+                                        <span th:if="${u.role == 'STUDENT'}" class="badge bg-primary">学生</span>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   th:checked="${u.status == 0}" 
+                                                   th:onchange="|toggleStatus(${u.id}, ${u.status == 0 ? 1 : 0})|">
+                                            <label class="form-check-label small" th:text="${u.status == 0 ? '启用' : '停用'}"></label>
+                                        </div>
+                                    </td>
+                                    <td th:text="${u.createTime != null ? #dates.format(u.createTime, 'yyyy-MM-dd HH:mm') : '-'}">2026-03-17</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-light text-primary me-2" th:onclick="|editUser(${u.id})|">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-light text-danger" th:onclick="|deleteUser(${u.id})|">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(userList)}">
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="fas fa-users fa-3x d-block mb-3 opacity-20"></i>
+                                        暂无用户数据
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 新增/编辑模态框 -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="modalTitle">新增用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">用户名 / 学号 / 工号</label>
+                        <input type="text" class="form-control" id="username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="mb-3" id="passwordGroup">
+                        <label class="form-label fw-bold">登录密码</label>
+                        <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">所属角色</label>
+                        <select class="form-select" id="role" required>
+                            <option value="STUDENT">学生</option>
+                            <option value="TEACHER">教师</option>
+                            <option value="ADMIN">管理员</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">账户状态</label>
+                        <select class="form-select" id="status">
+                            <option value="0">正常启用</option>
+                            <option value="1">停用账户</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveUser()">确认保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const contextPath = [[@{/}]].slice(0, -1);
+    let userModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        userModal = new bootstrap.Modal(document.getElementById('userModal'));
+    });
+
+    function showAddModal() {
+        document.getElementById('modalTitle').innerText = '新增用户';
+        document.getElementById('userId').value = '';
+        document.getElementById('username').disabled = false;
+        document.getElementById('passwordGroup').style.display = 'block';
+        document.getElementById('userForm').reset();
+        userModal.show();
+    }
+
+    async function editUser(id) {
+        try {
+            const response = await fetch(contextPath + '/user/get/' + id);
+            const result = await response.json();
+            if (result.code === 200) {
+                const u = result.data;
+                document.getElementById('modalTitle').innerText = '编辑用户';
+                document.getElementById('userId').value = u.id;
+                document.getElementById('username').value = u.username;
+                document.getElementById('username').disabled = true; // 用户名通常不修改
+                document.getElementById('passwordGroup').style.display = 'none'; // 修改不强制改密码
+                document.getElementById('role').value = u.role;
+                document.getElementById('status').value = u.status;
+                userModal.show();
+            }
+        } catch (error) { alert("获取信息失败"); }
+    }
+
+    async function saveUser() {
+        const id = document.getElementById('userId').value;
+        const url = id ? '/user/update' : '/user/add';
+        
+        const data = {
+            id: id || null,
+            username: document.getElementById('username').value,
+            role: document.getElementById('role').value,
+            status: parseInt(document.getElementById('status').value)
+        };
+        
+        if (!id) {
+            data.password = document.getElementById('password').value;
+        }
+
+        try {
+            const response = await fetch(contextPath + url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert("提交失败，请重试");
+        }
+    }
+
+    async function doImport(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch(contextPath + '/user/import', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message);
+            location.reload();
+        } catch (e) {
+            alert("导入失败");
+        }
+    }
+
+    async function toggleStatus(id, status) {
+        try {
+            const response = await fetch(contextPath + '/user/status?id=' + id + '&status=' + status, {
+                method: 'POST'
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) { alert("操作失败"); }
+    }
+
+    function deleteUser(id) {
+        if (confirm('确定要彻底删除该用户吗？删除后不可恢复！')) {
+            fetch(contextPath + '/user/delete/' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) location.reload();
+                    else alert(res.message);
+                });
+        }
+    }
+</script>
+</body>
+</html>

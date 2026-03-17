@@ -7,6 +7,8 @@ public class TeachingInfo extends BaseEntity {
     private Integer classId;
     private String semester;
 
+    //是否评教完成
+    private Integer isFinished = 0;
     // --- 冗余显示字段，不需要存入数据库 ---
     private String teacherName;
     private String courseName;
@@ -16,6 +18,14 @@ public class TeachingInfo extends BaseEntity {
 
     public Integer getId() {
         return id;
+    }
+
+    public Integer getIsFinished() {
+        return isFinished;
+    }
+
+    public void setIsFinished(Integer isFinished) {
+        this.isFinished = isFinished;
     }
 
     public void setId(Integer id) {

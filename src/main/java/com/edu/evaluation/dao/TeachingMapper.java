@@ -11,4 +11,6 @@ public interface TeachingMapper {
     int insert(TeachingInfo teaching);
     int update(TeachingInfo teaching);
     int deleteById(Integer id);
+
+    List<TeachingInfo> getTasksByClassId(Integer id);
 }

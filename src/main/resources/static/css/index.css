@@ -1,0 +1,162 @@
+/* 欢迎横幅 */
+.welcome-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: -20px;
+    margin-bottom: 40px;
+}
+
+.banner-content h1 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.banner-content .lead {
+    font-size: 1.3rem;
+    opacity: 0.95;
+}
+
+/* 统计卡片 */
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    border-top: 4px solid #667eea;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    margin: 0 auto 15px;
+}
+
+.stat-title {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0;
+}
+
+/* 快速操作卡片 */
+.quick-action-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    border-left: 5px solid #667eea;
+}
+
+.quick-action-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.action-icon {
+    flex-shrink: 0;
+    min-width: 80px;
+    text-align: center;
+}
+
+.action-content h5 {
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.action-content p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+/* 章节标题 */
+.section-title {
+    font-weight: 700;
+    color: #333;
+    border-left: 5px solid #667eea;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+/* 主容器 */
+.main-content {
+    padding: 40px 20px;
+    min-height: 70vh;
+}
+
+/* 表格优化 */
+.table-hover tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .welcome-banner {
+        padding: 40px 15px;
+    }
+
+    .welcome-banner h1 {
+        font-size: 1.8rem;
+    }
+
+    .stat-card {
+        margin-bottom: 15px;
+    }
+
+    .quick-action-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .action-icon {
+        margin: 0 auto;
+    }
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card, .quick-action-card {
+    animation: slideIn 0.5s ease-out;
+}

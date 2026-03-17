@@ -15,7 +15,7 @@
     </insert>
 
     <select id="findById" resultType="com.edu.evaluation.entity.StudentInfo">
-        SELECT * FROM info_student WHERE id = #{id}
+        SELECT * FROM info_student WHERE user_id = #{id}
     </select>
 
     <update id="update" parameterType="com.edu.evaluation.entity.StudentInfo">

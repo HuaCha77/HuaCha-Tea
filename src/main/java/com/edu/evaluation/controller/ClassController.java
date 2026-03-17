@@ -40,4 +40,19 @@ public class ClassController {
         classService.removeClass(id);
         return Result.success("删除成功");
     }
+
+    // 根据ID获取班级信息
+    @GetMapping("/get/{id}")
+    @ResponseBody
+    public Result<ClassInfo> getById(@PathVariable Integer id) {
+        return Result.success(classService.getClassById(id));
+    }
+
+    // 更新班级信息
+    @PostMapping("/update")
+    @ResponseBody
+    public Result<String> update(@RequestBody ClassInfo classInfo) {
+        classService.updateClass(classInfo);
+        return Result.success("班级修改成功");
+    }
 }

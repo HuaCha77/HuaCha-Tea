@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="common/fragments :: header_common('班级管理')"></head>
+<head th:replace="common/fragments :: header_common('班级管理 - 教学评价系统')"></head>
 <body>
 <div th:replace="common/fragments :: top_navbar"></div>
 
@@ -8,116 +8,162 @@
     <div th:replace="common/fragments :: side_menu('class')"></div>
 
     <main class="main-content">
-        <div class="card" style="background: white; padding: 20px; border-radius: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>班级信息清单</h3>
-                <button class="btn btn-success" onclick="showAddModal()">+ 新增班级</button>
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">班级信息管理</h4>
+                <button class="btn btn-primary shadow-sm" onclick="showAddModal()">
+                    <i class="fas fa-plus me-2"></i>新增班级
+                </button>
             </div>
-            <hr>
-            <table class="table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
-                <thead>
-                <tr style="background: #f8f9fa;">
-                    <th>ID</th>
-                    <th>班级名称</th>
-                    <th>所属专业</th>
-                    <th>年级</th>
-                    <th>创建时间</th>
-                    <th>操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="c : ${classList}">
-                    <td th:text="${c.id}"></td>
-                    <td th:text="${c.className}"></td>
-                    <td th:text="${c.major}"></td>
-                    <td th:text="${c.grade}"></td>
-                    <td th:text="${#dates.format(c.createTime, 'yyyy-MM-dd')}"></td>
-                    <td>
-                        <button class="btn btn-danger" th:onclick="'deleteClass(' + ${c.id} + ')'">删除</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div id="addModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
-            <div style="background:white; width:400px; margin:100px auto; padding:20px; border-radius:8px;">
-                <h4>新增班级</h4>
-                <hr>
-                <form id="addForm">
-                    <div class="form-group" style="margin-bottom:15px;">
-                        <label>班级名称</label>
-                        <input type="text" name="className" class="form-control" style="width:100%;" required>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>班级名称</th>
+                                    <th>专业</th>
+                                    <th>年级</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${classList}">
+                                    <td th:text="${c.id}">1</td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${c.className}">计算机科学1班</div>
+                                    </td>
+                                    <td th:text="${c.major}">计算机科学与技术</td>
+                                    <td th:text="${c.grade}">2022级</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-light text-primary me-2" th:onclick="'editClass(' + ${c.id} + ')'">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-light text-danger" th:onclick="'deleteClass(' + ${c.id} + ')'">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(classList)}">
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-3x d-block mb-3 opacity-20"></i>
+                                        暂无班级数据
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="form-group" style="margin-bottom:15px;">
-                        <label>所属专业</label>
-                        <input type="text" name="major" class="form-control" style="width:100%;" required>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 新增/编辑模态框 -->
+<div class="modal fade" id="classModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="modalTitle">新增班级</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="classForm">
+                    <input type="hidden" id="classId">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">班级名称</label>
+                        <input type="text" class="form-control" id="className" placeholder="如：软件工程2201" required>
                     </div>
-                    <div class="form-group" style="margin-bottom:15px;">
-                        <label>年级</label>
-                        <input type="text" name="grade" class="form-control" style="width:100%;" placeholder="如：2022级" required>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">所属专业</label>
+                        <input type="text" class="form-control" id="major" placeholder="如：软件工程" required>
                     </div>
-                    <div style="text-align:right;">
-                        <button type="button" class="btn" onclick="hideAddModal()">取消</button>
-                        <button type="button" class="btn btn-primary" onclick="submitAdd()">提交</button>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">年级</label>
+                        <input type="text" class="form-control" id="grade" placeholder="如：2022" required>
                     </div>
                 </form>
             </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveClass()">确认保存</button>
+            </div>
         </div>
-
-        <script th:inline="javascript">
-            const contextPath = [[@{/}]].slice(0, -1);
-
-                function showAddModal() {
-                    document.getElementById('addModal').style.display = 'block';
-                }
-
-                function hideAddModal() {
-                    document.getElementById('addModal').style.display = 'none';
-                    document.getElementById('addForm').reset();
-                }
-
-                async function submitAdd() {
-                    const form = document.getElementById('addForm');
-                    const formData = new FormData(form);
-                    const data = Object.fromEntries(formData.entries());
-
-                    try {
-                        const response = await fetch(contextPath + '/class/add', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
-                        });
-                        const result = await response.json();
-                        if (result.code === 200) {
-                            alert("添加成功！");
-                            location.reload();
-                        } else {
-                            alert(result.message);
-                        }
-                    } catch (error) {
-                        alert("提交失败，请检查网络");
-                    }
-                }
-
-            // 之前的 deleteClass 函数保持不变...
-        </script>
-    </main>
+    </div>
 </div>
 
 <script th:inline="javascript">
     const contextPath = [[@{/}]].slice(0, -1);
+    let classModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        classModal = new bootstrap.Modal(document.getElementById('classModal'));
+    });
+
+    function showAddModal() {
+        document.getElementById('modalTitle').innerText = '新增班级';
+        document.getElementById('classId').value = '';
+        document.getElementById('classForm').reset();
+        classModal.show();
+    }
+
+    async function editClass(id) {
+        try {
+            const response = await fetch(contextPath + '/class/get/' + id);
+            const result = await response.json();
+            if (result.code === 200) {
+                const c = result.data;
+                document.getElementById('modalTitle').innerText = '修改班级';
+                document.getElementById('classId').value = c.id;
+                document.getElementById('className').value = c.className;
+                document.getElementById('major').value = c.major;
+                document.getElementById('grade').value = c.grade;
+                classModal.show();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert("获取信息失败");
+        }
+    }
+
+    async function saveClass() {
+        const id = document.getElementById('classId').value;
+        const url = id ? '/class/update' : '/class/add';
+        
+        const data = {
+            id: id || null,
+            className: document.getElementById('className').value,
+            major: document.getElementById('major').value,
+            grade: document.getElementById('grade').value
+        };
+
+        try {
+            const response = await fetch(contextPath + url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert("提交失败，请重试");
+        }
+    }
 
     function deleteClass(id) {
-        if(confirm('确定要删除该班级吗？')) {
+        if (confirm('确定要删除该班级吗？')) {
             fetch(contextPath + '/class/delete/' + id, { method: 'POST' })
                 .then(res => res.json())
-                .then(data => {
-                    if(data.code === 200) {
-                        location.reload();
-                    } else {
-                        alert(data.message);
-                    }
+                .then(res => {
+                    if (res.code === 200) location.reload();
+                    else alert(res.message);
                 });
         }
     }

@@ -3,7 +3,14 @@
 <mapper namespace="com.edu.evaluation.dao.UserMapper">
 
     <select id="findByUsername" resultType="com.edu.evaluation.entity.User">
-        SELECT * FROM sys_user WHERE username = #{username} AND del_flag = 0
+        SELECT u.*, 
+        CASE 
+            WHEN u.role = 'STUDENT' THEN (SELECT name FROM info_student WHERE user_id = u.id)
+            WHEN u.role = 'TEACHER' THEN (SELECT name FROM info_teacher WHERE user_id = u.id)
+            ELSE u.username 
+        END as name
+        FROM sys_user u 
+        WHERE u.username = #{username} AND u.del_flag = 0
     </select>
 
     <insert id="insert" parameterType="com.edu.evaluation.entity.User"
@@ -16,12 +23,34 @@
             del_flag,
             create_time
         ) VALUES (
-                     #{username}, -- 这里存入的是工号
+                     #{username},
                      #{password},
                      #{role},
-                     1, -- 默认启用
+                     0, -- 默认正常
                      0, -- 正常状态
                      NOW()
                  )
     </insert>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.User">
+        UPDATE sys_user
+        <set>
+            <if test="password != null">password = #{password},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE sys_user SET del_flag = 1 WHERE id = #{id}
+    </update>
+
+    <select id="findAll" resultType="com.edu.evaluation.entity.User">
+        SELECT * FROM sys_user WHERE del_flag = 0
+    </select>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.User">
+        SELECT * FROM sys_user WHERE id = #{id} AND del_flag = 0
+    </select>
 </mapper>

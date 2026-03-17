@@ -9,4 +9,8 @@ public interface UserMapper {
     // 根据用户名查询用户信息
     User findByUsername(@Param("username") String username);
     int insert(User user);
+    int update(User user);
+    int deleteById(Integer id);
+    java.util.List<User> findAll();
+    User findById(Integer id);
 }

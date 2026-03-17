@@ -1,6 +1,89 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.evaluation.dao.EvaluationMapper">
 
-</beans>
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO info_evaluation (student_id, teaching_id, indicator_id, score, comment, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.studentId}, #{item.teachingId}, #{item.indicatorId}, #{item.score}, #{item.comment}, NOW())
+        </foreach>
+    </insert>
+
+    <select id="checkIsEvaluated" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM info_evaluation
+        WHERE student_id = #{studentId} AND teaching_id = #{teachingId}
+    </select>
+
+    <select id="getAvgScoreByTeachingId" resultType="java.lang.Double">
+        SELECT AVG(score) FROM info_evaluation WHERE teaching_id = #{teachingId}
+    </select>
+
+    <select id="getIndicatorStatsByTeachingId" resultType="java.util.Map">
+        SELECT i.indicator_name as name, AVG(e.score) as score
+        FROM info_evaluation e
+        JOIN info_indicator i ON e.indicator_id = i.id
+        WHERE e.teaching_id = #{teachingId}
+        GROUP BY i.id, i.indicator_name
+    </select>
+
+    <select id="getCommentsByTeachingId" resultType="java.lang.String">
+        SELECT DISTINCT comment FROM info_evaluation WHERE teaching_id = #{teachingId} AND comment IS NOT NULL AND comment != ''
+    </select>
+
+    <!-- 大数据统计 SQL -->
+    <select id="getGlobalAvgScore" resultType="java.lang.Double">
+        SELECT IFNULL(AVG(score), 0) FROM info_evaluation
+    </select>
+
+    <select id="getTotalEvalCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM info_evaluation
+    </select>
+
+    <select id="getGlobalTeacherCount" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT teacher_id) FROM info_teaching
+    </select>
+
+    <select id="getGlobalScoreDistribution" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN score &lt; 60 THEN '0-60'
+                WHEN score &gt;= 60 AND score &lt; 70 THEN '60-70'
+                WHEN score &gt;= 70 AND score &lt; 80 THEN '70-80'
+                WHEN score &gt;= 80 AND score &lt; 90 THEN '80-90'
+                ELSE '90-100'
+            END as range_name,
+            COUNT(1) as count
+        FROM info_evaluation
+        GROUP BY range_name
+        ORDER BY range_name ASC
+    </select>
+
+    <select id="getSemesterTrend" resultType="java.util.Map">
+        SELECT t.semester as name, AVG(e.score) as score
+        FROM info_evaluation e
+        JOIN info_teaching t ON e.teaching_id = t.id
+        GROUP BY t.semester
+        ORDER BY t.semester ASC
+    </select>
+
+    <select id="getTopTeachers" resultType="java.util.Map">
+        SELECT tc.name as name, AVG(e.score) as score
+        FROM info_evaluation e
+        JOIN info_teaching t ON e.teaching_id = t.id
+        JOIN info_teacher tc ON t.teacher_id = tc.id
+        GROUP BY tc.id, tc.name
+        ORDER BY score DESC
+        LIMIT 10
+    </select>
+
+    <select id="getStudentTotalTasks" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM info_teaching 
+        WHERE class_id = (SELECT class_id FROM info_student WHERE user_id = #{userId})
+    </select>
+
+    <select id="getStudentCompletedTasks" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT teaching_id) FROM info_evaluation 
+        WHERE student_id = (SELECT id FROM info_student WHERE user_id = #{userId})
+    </select>
+</mapper>

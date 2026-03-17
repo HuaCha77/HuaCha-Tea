@@ -34,5 +34,10 @@ public class TeachingServiceImpl implements TeachingService {
         teachingMapper.deleteById(id);
     }
 
+    @Override
+    public List<TeachingInfo> getTasksByClassId(Integer id){
+        return teachingMapper.getTasksByClassId(id);
+    }
+
 
 }

@@ -10,4 +10,6 @@ public interface TeachingService {
     void saveTeaching(TeachingInfo teaching);
     void removeTeaching(Integer id);
 
+    List<TeachingInfo> getTasksByClassId(Integer id);
+
 }

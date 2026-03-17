@@ -1,41 +1,81 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="common/fragments :: header_common('在线评价')"></head>
+<head th:replace="common/fragments :: header_common('教学质量评价')"></head>
+<style>
+    /* 问卷专属美化样式 */
+    .eval-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px 10px 0 0;
+        text-align: center;
+    }
+    .eval-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 20px auto;
+        max-width: 800px;
+    }
+    .eval-item {
+        padding: 20px 30px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.3s;
+    }
+    .eval-item:hover { background-color: #fcfcfc; }
+    .indicator-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 10px; }
+    .indicator-category {
+        display: inline-block; padding: 3px 8px;
+        background-color: #e6f7ff; color: #1890ff;
+        border-radius: 4px; font-size: 12px; margin-right: 10px;
+    }
+</style>
 <body>
 <div th:replace="common/fragments :: top_navbar"></div>
-<div class="layout-body">
-    <main class="main-content" style="max-width: 800px; margin: 20px auto;">
-        <div class="card" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-            <h3 style="text-align: center; color: #333;">教学质量评价表</h3>
-            <p style="text-align: center; color: #666;">
-                评价对象：<span th:text="${teaching.teacherName}" style="font-weight: bold; color: #1a73e8;"></span>
-                | 课程：<span th:text="${teaching.courseName}" style="font-weight: bold;"></span>
-            </p>
-            <hr>
+
+<div class="layout-body" style="background-color: #f4f7f6; min-height: calc(100vh - 60px);">
+    <div th:replace="common/fragments :: side_menu('my-tasks')"></div>
+
+    <main class="main-content">
+        <div class="eval-card">
+            <div class="eval-header">
+                <h2 style="margin: 0 0 10px 0; font-weight: normal;">课堂教学质量评价表</h2>
+                <p style="margin: 0; font-size: 15px; opacity: 0.9;">
+                    授课教师：<strong th:text="${teaching.teacherName}"></strong> &nbsp;|&nbsp;
+                    课程名称：<strong th:text="${teaching.courseName}"></strong>
+                </p>
+            </div>
+
+            <div style="padding: 10px 30px;">
+                <p style="color: #ff4d4f; font-size: 13px;">* 请客观、公正地对以下各项指标进行打分。系统已开启匿名保护，教师无法查看打分人信息。</p>
+            </div>
 
             <form id="evaluationForm">
                 <input type="hidden" id="teachingId" th:value="${teaching.id}">
 
-                <div th:each="ind : ${indicators}" class="evaluation-item" style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #eee;">
-                    <label style="display: block; font-weight: 500; margin-bottom: 10px;">
-                        <span th:text="${ind.category + '：'}" style="color: #666; font-size: 14px;"></span>
+                <div th:each="ind : ${indicators}" class="eval-item">
+                    <div class="indicator-title">
+                        <span class="indicator-category" th:text="${ind.category}"></span>
                         <span th:text="${ind.indicatorName}"></span>
-                        <span th:text="'(分值范围: 0-' + ${ind.maxScore} + ')'" style="color: #999; font-size: 12px; margin-left: 10px;"></span>
-                    </label>
-                    <input type="number"
-                           th:attr="data-indicator-id=${ind.id}, max=${ind.maxScore}"
-                           class="score-input form-control"
-                           placeholder="请输入分值"
-                           style="width: 150px;" required>
+                        <span style="color: #999; font-size: 13px; font-weight: normal;" th:text="'(满分: ' + ${ind.maxScore} + '分)'"></span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <input type="number"
+                               class="form-control score-input"
+                               th:attr="data-indicator-id=${ind.id}, max=${ind.maxScore}"
+                               min="0" step="0.5"
+                               style="width: 200px; display: inline-block;"
+                               placeholder="请输入打分" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>意见与建议（选填）</label>
-                    <textarea id="comment" class="form-control" rows="3" placeholder="写下您对老师的建议..."></textarea>
+                <div class="eval-item" style="border-bottom: none;">
+                    <div class="indicator-title">对本课程的其他意见或建议（选填）</div>
+                    <textarea id="comment" class="form-control" rows="4" placeholder="写下您想对老师说的话..."></textarea>
                 </div>
 
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="button" class="btn btn-primary" style="padding: 10px 40px;" onclick="submitAll()">提交评价</button>
+                <div style="padding: 20px 30px 40px; text-align: center;">
+                    <button type="button" class="btn btn-primary" style="padding: 10px 40px; font-size: 16px; border-radius: 20px;" onclick="submitEvaluation()">提交评价</button>
                 </div>
             </form>
         </div>
@@ -43,41 +83,62 @@
 </div>
 
 <script th:inline="javascript">
-    async function submitAll() {
+    async function submitEvaluation() {
         const teachingId = document.getElementById('teachingId').value;
         const comment = document.getElementById('comment').value;
         const scoreInputs = document.querySelectorAll('.score-input');
 
-        // 组装批量评价数据
         const evaluationList = [];
-        for (let input of scoreInputs) {
+        let isValid = true;
+
+        // 收集数据并进行前端基础校验
+        scoreInputs.forEach(input => {
             const score = parseFloat(input.value);
             const max = parseFloat(input.getAttribute('max'));
 
             if (isNaN(score) || score < 0 || score > max) {
-                alert("请确保所有分值在有效范围内！");
-                return;
+                isValid = false;
+                input.style.borderColor = 'red';
+            } else {
+                input.style.borderColor = '#ccc';
+                evaluationList.push({
+                    teachingId: teachingId,
+                    indicatorId: input.getAttribute('data-indicator-id'),
+                    score: score,
+                    comment: comment
+                });
             }
-
-            evaluationList.push({
-                teachingId: teachingId,
-                indicatorId: input.getAttribute('data-indicator-id'),
-                score: score,
-                comment: comment
-            });
-        }
-
-        // 发送到后端批量保存
-        const response = await fetch('/evaluation/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(evaluationList)
         });
 
-        const result = await response.json();
-        if (result.code === 200) {
-            alert("评价提交成功！感谢您的反馈。");
-            window.location.href = "/student/my-tasks";
+        if (!isValid) {
+            alert("请仔细检查，所有打分必须在有效范围内且不能为空！");
+            return;
+        }
+
+        if (confirm("提交后不可修改，确认提交吗？")) {
+            try {
+                const targetUrl = /*[[@{/evaluation/submit}]]*/ '/evaluation/submit';
+
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(evaluationList)
+                });
+
+                const result = await response.json();
+
+                console.log("后端返回的完整数据",result);
+
+                if (result.code === 200) {
+                    alert("评价提交成功！");
+                    // 提交成功后跳回学生的任务列表页
+                    window.location.href = /*[[@{/student/my-tasks}]]*/ '/student/my-tasks';
+                } else {
+                    alert("提交失败：" + (result.msg || result.message || JSON.stringify(result))); // 显示后端的错误提示（如：已评价过）
+                }
+            } catch (e) {
+                alert("网络异常，请重试！");
+            }
         }
     }
 </script>

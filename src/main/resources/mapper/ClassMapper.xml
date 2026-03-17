@@ -13,4 +13,18 @@
     <update id="deleteById">
         UPDATE sys_class SET del_flag = 1 WHERE id = #{id}
     </update>
+
+    <select id="findById" resultType="com.edu.evaluation.entity.ClassInfo">
+        SELECT * FROM sys_class WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <update id="update" parameterType="com.edu.evaluation.entity.ClassInfo">
+        UPDATE sys_class
+        <set>
+            <if test="className != null">class_name = #{className},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="grade != null">grade = #{grade},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
 </mapper>
